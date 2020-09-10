@@ -113,10 +113,13 @@ def run(command,
         array_limit=None,
         log_file=None,
         error_file=None,
-        flags=None):
+        flags=None,
+        billing=None):
     ''' If execute, returns the jobid, or the job name if the jobid cannot
     be found in stdout. if not execute, returns the assembled bsub
     command as a string (if expand) or a list of strings (if not expand)'''
+    if billing is None:
+        raise ValueError("Who should be billed?")
 
     if not singularity_image or singularity_image == "None":
         comment = ""
@@ -148,11 +151,11 @@ def run(command,
         error = ""
 
     if not batch:
-        submit_cmd = 'bsub -I -R "affinity[core(1)]"'
+        submit_cmd = f'bsub -P {billing} -I -R "affinity[core(1)]"'
     elif array_size > 1:
-        submit_cmd = 'bsub -R "affinity[core(1)]" ' + log + error
+        submit_cmd = f'bsub -P {billing} -R "affinity[core(1)]" ' + log + error
     else:
-        submit_cmd = 'bsub -K -R "affinity[core(1)]" ' + log + error
+        submit_cmd = f'bsub -P {billing} -K -R "affinity[core(1)]" ' + log + error
 
     if num_gpus <= 0:
         use_gpus = ""
